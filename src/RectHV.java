@@ -20,6 +20,11 @@ public class RectHV {
         return (p.x() >= xmin && p.x() <= xmax && p.y() >= ymin && p.y() <= ymax);
     }
 
+    public boolean intersects(RectHV that) {
+        return !(this.xmax < that.xmin || that.xmax < this.xmin ||
+                 this.ymax < that.ymin || that.ymax < this.ymin);
+    }
+
     public double distanceSquaredTo(Point2D p) {
         double dx = 0.0, dy = 0.0;
         if (p.x() < xmin) dx = xmin - p.x();

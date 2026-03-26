@@ -1,3 +1,6 @@
+import java.util.ArrayList;
+import java.util.List;
+
 public class KdTree {
     private Node root;
     private int size;
@@ -83,5 +86,33 @@ public class KdTree {
                 return contains(n.getRt(), p, true); // Go top
             }
         }
+    }
+
+    public Iterable<Point2D> range(RectHV rect) {
+        if (rect == null) throw new IllegalArgumentException("Rectangle cannot be null");
+        List<Point2D> result = new ArrayList<>();
+        range(root, rect, result, true);
+        return result;
+    }
+
+    private void range(Node n, RectHV rect, List<Point2D> result, boolean useX) {
+        // Base case: null node
+        if (n == null) {
+            return;
+        }
+
+        // Pruning: if query rectangle doesn't intersect this node's bounding rectangle, skip branch
+        if (!rect.intersects(n.getRect())) {
+            return;
+        }
+
+        // If query rectangle contains the current node's point, add it
+        if (rect.contains(n.getPoint())) {
+            result.add(n.getPoint());
+        }
+
+        // Recursively search both subtrees
+        range(n.getLb(), rect, result, !useX);
+        range(n.getRt(), rect, result, !useX);
     }
 }
