@@ -55,7 +55,33 @@ public class KdTree {
 
     public boolean contains(Point2D p) {
         if (p == null) throw new IllegalArgumentException("Point cannot be null");
-        // TODO: Implement contains logic
-        return false;
+        return contains(root, p, true);
+    }
+
+    private boolean contains(Node n, Point2D p, boolean useX) {
+        // Base case: reached a null node, point not found
+        if (n == null) {
+            return false;
+        }
+
+        // Check if current node's point matches exactly
+        if (n.getPoint().equals(p)) {
+            return true;
+        }
+
+        // Traverse based on active dimension (alternating X and Y)
+        if (useX) { // Level 0, 2, 4... -> compare X
+            if (p.x() < n.getPoint().x()) {
+                return contains(n.getLb(), p, false); // Go left
+            } else {
+                return contains(n.getRt(), p, false); // Go right
+            }
+        } else { // Level 1, 3, 5... -> compare Y
+            if (p.y() < n.getPoint().y()) {
+                return contains(n.getLb(), p, true); // Go bottom
+            } else {
+                return contains(n.getRt(), p, true); // Go top
+            }
+        }
     }
 }
