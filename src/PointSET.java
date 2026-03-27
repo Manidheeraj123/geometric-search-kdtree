@@ -70,10 +70,14 @@ public class PointSET {
 
     /**
      * Draws all points in the set to standard drawing.
+     * Points are drawn in black with a pen radius of 0.01.
      */
     public void draw() {
-        // Optional: can implement drawing of all points in the set
-        // For now, leaving empty as requested
+        StdDraw.setPenColor(StdDraw.BLACK);
+        StdDraw.setPenRadius(0.01);
+        for (Point2D p : points) {
+            p.draw();
+        }
     }
 
     /**
