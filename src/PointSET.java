@@ -70,6 +70,7 @@ public class PointSET {
 
     /**
      * Draws all points in the set to standard drawing.
+     * Points are drawn in black with a pen radius of 0.01.
      */
     public void draw() {
         StdDraw.setPenColor(StdDraw.BLACK);
