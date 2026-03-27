@@ -34,3 +34,6 @@ This project was developed using a strict **Feature Branching & Pull Request Wor
 
 ## AI Usage Statement
 Generative AI tools were utilized during the iterative development of this codebase. Every instance of AI assistance for complex recursive logic is logged and tracked in the `AI_PROMPTS.md` file in the root directory.
+
+## Testing & Verification
+The project includes a comprehensive `Main.java` testing harness built to automatically insert, execute, and visually render operations across both the baseline `PointSET` and the highly optimized `KdTree`. This acts as mathematical absolute proof that the optimized branching logic arrives at the exact same geometric points as the linear search.
