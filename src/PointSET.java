@@ -93,16 +93,16 @@ public class PointSET {
         if (rect == null) {
             throw new IllegalArgumentException("Rectangle cannot be null");
         }
-        
+
         List<Point2D> result = new ArrayList<>();
-        
+
         // Brute-force: iterate through all points and check containment
         for (Point2D p : points) {
             if (rect.contains(p)) {
                 result.add(p);
             }
         }
-        
+
         return result;
     }
 
@@ -120,14 +120,14 @@ public class PointSET {
         if (p == null) {
             throw new IllegalArgumentException("Point cannot be null");
         }
-        
+
         if (isEmpty()) {
             return null;
         }
-        
+
         Point2D nearest = null;
         double minDistSquared = Double.POSITIVE_INFINITY;
-        
+
         // Brute-force: iterate through all points and track closest
         for (Point2D candidate : points) {
             double distSquared = p.distanceSquaredTo(candidate);
@@ -136,7 +136,7 @@ public class PointSET {
                 nearest = candidate;
             }
         }
-        
+
         return nearest;
     }
 }

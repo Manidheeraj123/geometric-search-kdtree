@@ -93,6 +93,35 @@ public class KdTree {
         }
     }
 
+    public void draw() {
+        draw(root, true);
+    }
+
+    private void draw(Node n, boolean useX) {
+        if (n == null) return;
+        
+        // Draw the point itself in regular black
+        StdDraw.setPenColor(StdDraw.BLACK);
+        StdDraw.setPenRadius(0.01);
+        n.p.draw();
+        
+        // Draw the splitting line depending on the active dimension
+        StdDraw.setPenRadius(); // reset to default thin line
+        if (useX) {
+            StdDraw.setPenColor(StdDraw.RED);
+            // vertical line bounded by the node's rectangle limits
+            StdDraw.line(n.p.x(), n.rect.ymin(), n.p.x(), n.rect.ymax());
+        } else {
+            StdDraw.setPenColor(StdDraw.BLUE);
+            // horizontal line bounded by the node's rectangle limits
+            StdDraw.line(n.rect.xmin(), n.p.y(), n.rect.xmax(), n.p.y());
+        }
+        
+        // Recursively draw subtrees
+        draw(n.lb, !useX);
+        draw(n.rt, !useX);
+    }
+
     public Iterable<Point2D> range(RectHV rect) {
         if (rect == null) throw new IllegalArgumentException("Rectangle cannot be null");
         List<Point2D> result = new ArrayList<>();
