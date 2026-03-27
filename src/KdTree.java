@@ -115,4 +115,51 @@ public class KdTree {
         range(n.getLb(), rect, result, !useX);
         range(n.getRt(), rect, result, !useX);
     }
+
+    public Point2D nearest(Point2D p) {
+        if (p == null) throw new IllegalArgumentException("Point cannot be null");
+        if (isEmpty()) return null;
+        return nearest(root, p, root.getPoint(), true);
+    }
+
+    private Point2D nearest(Node n, Point2D p, Point2D closest, boolean useX) {
+        if (n == null) {
+            return closest;
+        }
+
+        // Pruning rule: if the closest known point is closer than the bounding rectangle of this node, 
+        // we completely ignore this branch and its children!
+        if (closest != null && closest.distanceSquaredTo(p) <= n.getRect().distanceSquaredTo(p)) {
+            return closest;
+        }
+
+        // Update closest point if current node is closer
+        if (n.getPoint().distanceSquaredTo(p) < closest.distanceSquaredTo(p)) {
+            closest = n.getPoint();
+        }
+
+        // Determine which side of the splitting line the query point falls on.
+        // We always search the same-side subtree FIRST because it's most likely to contain the closest point.
+        Node first, second;
+        if (useX) {
+            if (p.x() < n.getPoint().x()) {
+                first = n.getLb();   second = n.getRt();
+            } else {
+                first = n.getRt();   second = n.getLb();
+            }
+        } else {
+            if (p.y() < n.getPoint().y()) {
+                first = n.getLb();   second = n.getRt();
+            } else {
+                first = n.getRt();   second = n.getLb();
+            }
+        }
+
+        // Search the first (closer) subtree
+        closest = nearest(first, p, closest, !useX);
+        // Search the second (further) subtree. It might get pruned if the first search finds a really close point!
+        closest = nearest(second, p, closest, !useX);
+
+        return closest;
+    }
 }
