@@ -1,7 +1,22 @@
+import edu.princeton.cs.algs4.Point2D;
+import edu.princeton.cs.algs4.RectHV;
+import edu.princeton.cs.algs4.StdDraw;
 import java.util.ArrayList;
 import java.util.List;
 
 public class KdTree {
+    private static class Node {
+        private final Point2D p;      // the point
+        private final RectHV rect;    // the axis-aligned rectangle corresponding to this node
+        private Node lb;        // the left/bottom subtree
+        private Node rt;        // the right/top subtree
+
+        public Node(Point2D p, RectHV rect) {
+            this.p = p;
+            this.rect = rect;
+        }
+    }
+
     private Node root;
     private int size;
 
@@ -20,7 +35,6 @@ public class KdTree {
 
     public void insert(Point2D p) {
         if (p == null) throw new IllegalArgumentException("Point cannot be null");
-        // We assume bounds are [0.0, 1.0] as standard for Sedgewick projects
         root = insert(root, p, true, 0.0, 0.0, 1.0, 1.0);
     }
 
@@ -30,27 +44,21 @@ public class KdTree {
             return new Node(p, new RectHV(xmin, ymin, xmax, ymax));
         }
         
-        // If exact same point, don't insert duplicate
-        if (n.getPoint().equals(p)) {
+        if (n.p.equals(p)) {
             return n;
         }
 
-        // Compare based on active dimension
-        if (useX) { // Level 0, 2, 4... -> compare X
-            if (p.x() < n.getPoint().x()) {
-                // Left subtree: limit max X
-                n.setLb(insert(n.getLb(), p, false, xmin, ymin, n.getPoint().x(), ymax));
+        if (useX) { 
+            if (p.x() < n.p.x()) {
+                n.lb = insert(n.lb, p, false, xmin, ymin, n.p.x(), ymax);
             } else {
-                // Right subtree: limit min X
-                n.setRt(insert(n.getRt(), p, false, n.getPoint().x(), ymin, xmax, ymax));
+                n.rt = insert(n.rt, p, false, n.p.x(), ymin, xmax, ymax);
             }
-        } else { // Level 1, 3, 5... -> compare Y
-            if (p.y() < n.getPoint().y()) {
-                // Bottom subtree: limit max Y
-                n.setLb(insert(n.getLb(), p, true, xmin, ymin, xmax, n.getPoint().y()));
+        } else { 
+            if (p.y() < n.p.y()) {
+                n.lb = insert(n.lb, p, true, xmin, ymin, xmax, n.p.y());
             } else {
-                // Top subtree: limit min Y
-                n.setRt(insert(n.getRt(), p, true, xmin, n.getPoint().y(), xmax, ymax));
+                n.rt = insert(n.rt, p, true, xmin, n.p.y(), xmax, ymax);
             }
         }
         return n;
@@ -62,28 +70,25 @@ public class KdTree {
     }
 
     private boolean contains(Node n, Point2D p, boolean useX) {
-        // Base case: reached a null node, point not found
         if (n == null) {
             return false;
         }
 
-        // Check if current node's point matches exactly
-        if (n.getPoint().equals(p)) {
+        if (n.p.equals(p)) {
             return true;
         }
 
-        // Traverse based on active dimension (alternating X and Y)
-        if (useX) { // Level 0, 2, 4... -> compare X
-            if (p.x() < n.getPoint().x()) {
-                return contains(n.getLb(), p, false); // Go left
+        if (useX) { 
+            if (p.x() < n.p.x()) {
+                return contains(n.lb, p, false); 
             } else {
-                return contains(n.getRt(), p, false); // Go right
+                return contains(n.rt, p, false); 
             }
-        } else { // Level 1, 3, 5... -> compare Y
-            if (p.y() < n.getPoint().y()) {
-                return contains(n.getLb(), p, true); // Go bottom
+        } else { 
+            if (p.y() < n.p.y()) {
+                return contains(n.lb, p, true); 
             } else {
-                return contains(n.getRt(), p, true); // Go top
+                return contains(n.rt, p, true); 
             }
         }
     }
@@ -96,30 +101,26 @@ public class KdTree {
     }
 
     private void range(Node n, RectHV rect, List<Point2D> result, boolean useX) {
-        // Base case: null node
         if (n == null) {
             return;
         }
 
-        // Pruning: if query rectangle doesn't intersect this node's bounding rectangle, skip branch
-        if (!rect.intersects(n.getRect())) {
+        if (!rect.intersects(n.rect)) {
             return;
         }
 
-        // If query rectangle contains the current node's point, add it
-        if (rect.contains(n.getPoint())) {
-            result.add(n.getPoint());
+        if (rect.contains(n.p)) {
+            result.add(n.p);
         }
 
-        // Recursively search both subtrees
-        range(n.getLb(), rect, result, !useX);
-        range(n.getRt(), rect, result, !useX);
+        range(n.lb, rect, result, !useX);
+        range(n.rt, rect, result, !useX);
     }
 
     public Point2D nearest(Point2D p) {
         if (p == null) throw new IllegalArgumentException("Point cannot be null");
         if (isEmpty()) return null;
-        return nearest(root, p, root.getPoint(), true);
+        return nearest(root, p, root.p, true);
     }
 
     private Point2D nearest(Node n, Point2D p, Point2D closest, boolean useX) {
@@ -127,37 +128,30 @@ public class KdTree {
             return closest;
         }
 
-        // Pruning rule: if the closest known point is closer than the bounding rectangle of this node, 
-        // we completely ignore this branch and its children!
-        if (closest != null && closest.distanceSquaredTo(p) <= n.getRect().distanceSquaredTo(p)) {
+        if (closest != null && closest.distanceSquaredTo(p) <= n.rect.distanceSquaredTo(p)) {
             return closest;
         }
 
-        // Update closest point if current node is closer
-        if (n.getPoint().distanceSquaredTo(p) < closest.distanceSquaredTo(p)) {
-            closest = n.getPoint();
+        if (n.p.distanceSquaredTo(p) < closest.distanceSquaredTo(p)) {
+            closest = n.p;
         }
 
-        // Determine which side of the splitting line the query point falls on.
-        // We always search the same-side subtree FIRST because it's most likely to contain the closest point.
         Node first, second;
         if (useX) {
-            if (p.x() < n.getPoint().x()) {
-                first = n.getLb();   second = n.getRt();
+            if (p.x() < n.p.x()) {
+                first = n.lb;   second = n.rt;
             } else {
-                first = n.getRt();   second = n.getLb();
+                first = n.rt;   second = n.lb;
             }
         } else {
-            if (p.y() < n.getPoint().y()) {
-                first = n.getLb();   second = n.getRt();
+            if (p.y() < n.p.y()) {
+                first = n.lb;   second = n.rt;
             } else {
-                first = n.getRt();   second = n.getLb();
+                first = n.rt;   second = n.lb;
             }
         }
 
-        // Search the first (closer) subtree
         closest = nearest(first, p, closest, !useX);
-        // Search the second (further) subtree. It might get pruned if the first search finds a really close point!
         closest = nearest(second, p, closest, !useX);
 
         return closest;
