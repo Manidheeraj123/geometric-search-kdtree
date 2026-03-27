@@ -123,6 +123,42 @@ public class KdTree {
         return nearest(root, p, root.p, true);
     }
 
+    /**
+     * Draws the KdTree structure to standard drawing.
+     * Points are drawn in black, vertical splits in red, horizontal splits in blue.
+     */
+    public void draw() {
+        draw(root, true);
+    }
+
+    private void draw(Node n, boolean useX) {
+        if (n == null) {
+            return;
+        }
+
+        // Draw the point in black
+        StdDraw.setPenColor(StdDraw.BLACK);
+        StdDraw.setPenRadius(0.01);
+        n.p.draw();
+
+        // Draw the subdivision line
+        if (useX) {
+            // Vertical line at x = n.p.x()
+            StdDraw.setPenColor(StdDraw.RED);
+            StdDraw.setPenRadius();
+            StdDraw.line(n.p.x(), n.rect.ymin(), n.p.x(), n.rect.ymax());
+        } else {
+            // Horizontal line at y = n.p.y()
+            StdDraw.setPenColor(StdDraw.BLUE);
+            StdDraw.setPenRadius();
+            StdDraw.line(n.rect.xmin(), n.p.y(), n.rect.xmax(), n.p.y());
+        }
+
+        // Recursively draw left/bottom and right/top subtrees
+        draw(n.lb, !useX);
+        draw(n.rt, !useX);
+    }
+
     private Point2D nearest(Node n, Point2D p, Point2D closest, boolean useX) {
         if (n == null) {
             return closest;
