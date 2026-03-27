@@ -1,0 +1,11 @@
+*.class
+
+# IDE configurations
+.vscode/
+
+# Package Files (ignoring global jars, but we will force add lib/algs4.jar)
+*.jar
+!lib/algs4.jar
+
+# virtual machine crash logs
+hs_err_pid*
